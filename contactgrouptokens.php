@@ -140,3 +140,55 @@ function contactgrouptokens_civicrm_entityTypes(&$entityTypes) {
 function contactgrouptokens_civicrm_themes(&$themes) {
   _contactgrouptokens_civix_civicrm_themes($themes);
 }
+
+/**
+ * Implements hook_civicrm_tokens().
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_tokens
+ */
+function contactgrouptokens_civicrm_tokens(&$tokens) {
+  $tokens['contactgroup'] = [
+    'contactgroup.groups_comma' => 'Contact groups(comma separated)',
+    'contactgroup.groups_list' => 'Contact groups(list)',
+  ];
+}
+
+/**
+ * Implements hook_civicrm_tokenValues().
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_tokenValues
+ */
+function contactgrouptokens_civicrm_tokenValues(&$values, $cids, $job = NULL, $tokens = [], $context = NULL) {
+  if (!empty($tokens['contactgroup'])) {
+    foreach ($values as $cid => &$value) {
+      $allGroups = CRM_Core_PseudoConstant::nestedGroup();
+      $contactGroups = civicrm_api3('Contact', 'getsingle', [
+        'return' => ['group'],
+        'id' => $cid,
+      ])['groups'];
+      $contactGroups = explode(',', trim($contactGroups));
+
+      foreach ($tokens['contactgroup'] as $tokenName) {
+        $tokenValue = '';
+        if (!empty($contactGroups)) {
+          switch ($tokenName) {
+            case 'groups_comma' :
+              $tokenValue = array_intersect_key($allGroups, array_flip($contactGroups));
+              $tokenValue = implode(', ', $tokenValue);
+              break;
+            case 'groups_list' :
+              $tokenValue = '<ul>';
+              foreach ($contactGroups as $gid) {
+                if (!empty($allGroups[$gid])) {
+                  $tokenValue .= '<li>' . $allGroups[$gid] . '</li>';
+                }
+              }
+              $tokenValue .= '</ul>';
+              break;
+          }
+        }
+        $value["contactgroup.{$tokenName}"] = $tokenValue;
+      }
+    }
+  }
+}
