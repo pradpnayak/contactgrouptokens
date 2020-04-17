@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<extension key="contactgrouptokens" type="module">
+  <file>contactgrouptokens</file>
+  <name>Contacts group token</name>
+  <description>This extension provides contacts group as token in email.</description>
+  <license>AGPL-3.0</license>
+  <maintainer>
+    <author>Pradeep Nayak</author>
+    <email>pradpnayak@gmail.com</email>
+  </maintainer>
+  <urls>
+    <url desc="Main Extension Page">https://github.com/pradpnayak/contactgrouptokens/blob/master/README.md</url>
+    <url desc="Documentation">https://github.com/pradpnayak/contactgrouptokens/blob/master/README.md</url>
+    <url desc="Support">https://github.com/pradpnayak/contactgrouptokens/issues</url>
+    <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
+  </urls>
+  <releaseDate>2020-04-17</releaseDate>
+  <version>1.0</version>
+  <develStage>stable</develStage>
+  <compatibility>
+    <ver>5.19</ver>
+  </compatibility>
+  <comments>This is a new, undeveloped module</comments>
+  <civix>
+    <namespace>CRM/Contactgrouptokens</namespace>
+  </civix>
+</extension>
