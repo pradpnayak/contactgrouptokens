@@ -150,7 +150,21 @@ function contactgrouptokens_civicrm_tokens(&$tokens) {
   $tokens['contactgroup'] = [
     'contactgroup.groups_comma' => 'Contact groups(comma separated)',
     'contactgroup.groups_list' => 'Contact groups(list)',
+    'contactgroup.groups_visible_comma' => 'Contact visible groups(comma separated)',
+    'contactgroup.groups_visible_list' => 'Contact visible groups(list)',
+    'contactgroup.groups_restricted_comma' => 'Contact restricted groups(comma separated)',
+    'contactgroup.groups_restricted_list' => 'Contact restricted groups(list)',
   ];
+}
+
+/**
+ * get all public expose group.
+ */
+function _contactgrouptokens_civicrm_publicExposeGroup() {
+  $groups = [];
+  $condition = " visibility != 'User and User Admin Only'";
+  CRM_Core_PseudoConstant::populate($groups, 'CRM_Contact_DAO_Group', FALSE, 'title', 'is_active', $condition, 'title');
+  return $groups;
 }
 
 /**
@@ -162,6 +176,8 @@ function contactgrouptokens_civicrm_tokenValues(&$values, $cids, $job = NULL, $t
   if (!empty($tokens['contactgroup'])) {
     foreach ($values as $cid => &$value) {
       $allGroups = CRM_Core_PseudoConstant::nestedGroup();
+      $publicExposeGroup = _contactgrouptokens_civicrm_publicExposeGroup();
+      $adminGroups = array_diff($allGroups, $publicExposeGroup);
       $contactGroups = civicrm_api3('Contact', 'getsingle', [
         'return' => ['group'],
         'id' => $cid,
@@ -170,16 +186,32 @@ function contactgrouptokens_civicrm_tokenValues(&$values, $cids, $job = NULL, $t
 
       foreach ($tokens['contactgroup'] as $tokenName) {
         $tokenValue = '';
+        $groupToCompare = $allGroups;
+        switch ($tokenName) {
+          case 'groups_restricted_comma' :
+          case 'groups_restricted_list' :
+            $groupToCompare = $adminGroups;
+            break;
+          case 'groups_visible_list' :
+          case 'groups_visible_comma' :
+            $groupToCompare = $publicExposeGroup;
+            break;
+        }
+
         if (!empty($contactGroups)) {
           switch ($tokenName) {
+            case 'groups_restricted_comma' :
+            case 'groups_visible_comma' :
             case 'groups_comma' :
-              $tokenValue = array_intersect_key($allGroups, array_flip($contactGroups));
+              $tokenValue = array_intersect_key($groupToCompare, array_flip($contactGroups));
               $tokenValue = implode(', ', $tokenValue);
               break;
             case 'groups_list' :
+            case 'groups_restricted_list' :
+            case 'groups_visible_list' :
               $tokenValue = '<ul>';
               foreach ($contactGroups as $gid) {
-                if (!empty($allGroups[$gid])) {
+                if (!empty($groupToCompare[$gid])) {
                   $tokenValue .= '<li>' . $allGroups[$gid] . '</li>';
                 }
               }
